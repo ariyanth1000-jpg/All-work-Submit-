@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium WebView System</title>
+
+<!-- Flicker-free lock state BEFORE render -->
+<script>
+if(localStorage.getItem("isLocked")==="true"){
+    document.documentElement.classList.add("locked-mode");
+}
+</script>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    font-family:Arial,sans-serif;
+    background:#0f172a;
+}
+
+.container{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    transition: all 0.3s ease;
+}
+
+/* TOP BAR */
+.topbar{
+    padding:10px;
+    background:rgba(255,255,255,.05);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(255,255,255,.08);
+    position:relative;
+    z-index:10;
+    transition:all .3s ease;
+}
+
+/* SELECT */
+#tabSelect{
+    width:100%;
+    height:54px;
+    border:none;
+    border-radius:16px;
+    background:linear-gradient(135deg,#00c853,#00a152);
+    color:#fff;
+    font-weight:800;
+    text-align:center;
+    font-size:clamp(11px,2.4vw,16px);
+    outline:none;
+    cursor:pointer;
+    box-shadow:0 10px 25px rgba(0,200,83,.35);
+    transition:all .25s ease;
+}
+
+#tabSelect:hover,
+#tabSelect:focus{
+    transform:translateY(-2px) scale(1.01);
+    box-shadow:0 14px 30px rgba(0,200,83,.55);
+}
+
+#tabSelect:active{transform:scale(.98);}
+#tabSelect option{text-align:center;font-weight:700;}
+
+.option-active{
+    background:#00e676 !important;
+    color:#000 !important;
+}
+
+/* WEBVIEW */
+.webviews{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+    background:#000;
+    transition: all 0.3s ease;
+}
+
+.webviews iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    display:none;
+    border:none;
+    background:#fff;
+    transition: all 0.3s ease;
+}
+
+.webviews iframe.active{
+    display:block;
+    border:5px solid #00c853;
+    box-sizing:border-box;
+}
+
+/* ===== LOCK BUTTON (UPDATED) ===== */
+#lockBtn{
+    position:fixed;
+    bottom:12px;
+    right:12px;   /* এখন ডান পাশে corner */
+    
+    width:38px;
+    height:38px;
+
+    border:none;
+    border-radius:50%;
+
+    background:rgba(0,200,83,.95);
+    color:#fff;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    font-size:18px;
+
+    cursor:pointer;
+
+    box-shadow:0 3px 10px rgba(0,200,83,.35);
+
+    z-index:9999;
+
+    transition:.25s;
+}
+
+#lockBtn:hover{
+    transform:scale(1.1);
+}
+
+/* LOCKED MODE (NO FLICKER) */
+.locked-mode .topbar{
+    height:0 !important;
+    padding:0 !important;
+    overflow:hidden !important;
+    opacity:0 !important;
+    border:none !important;
+}
+
+.locked-mode .webviews{
+    height:100vh !important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="topbar" id="topbar">
+        <select id="tabSelect" onchange="changeTab(this.value)">
+            <option value="tab1">ⓕ FB Cookies ID🍪</option>
+            <option value="tab2">ⓕ FB Mail Added ID🛡️</option>
+            <option value="tab3">ⓕ FB Followers ID👥</option>
+            <option value="tab4">ⓕ FB Normal ID🛡️</option>
+            <option value="tab5">ⓕ FB Recovery old ID 🔐</option>
+            <option value="tab6">ⓕ FB Recovery New ID🍪</option>
+            <option value="tab7">🅾 IG Normal ID🛡️</option>
+            <option value="tab8">🅾 IG Cookies ID🍪</option>
+            <option value="tab9">🏆 Top Coin 🔝</option>
+            <option value="tab10">🪙 Follow Token ⛁</option>
+            <option value="tab11">💎 Instra coin ⛃</option>
+            <option value="tab12">📩 Gmail New ID💌</option>
+            <option value="tab13">✆ Whatsapp Rent💬</option>
+            <option value="tab14">📲 OTP Project🔑</option>
+            <option value="tab15">🛠 BM boosting 🚀</option>
+        </select>
+    </div>
+
+    <div class="webviews" id="webviews">
+
+        <iframe id="tab1" src="Link_1"></iframe>
+        <iframe id="tab2" src="https://ariyanth1000-jpg.github.io/Submit-ID"></iframe>
+        <iframe id="tab3" src="LINK_3"></iframe>
+        <iframe id="tab4" src="LINK_4"></iframe>
+        <iframe id="tab5" src="LINK_5"></iframe>
+        <iframe id="tab6" src="LINK_6"></iframe>
+        <iframe id="tab7" src="LINK_7"></iframe>
+        <iframe id="tab8" src="LINK_8"></iframe>
+        <iframe id="tab9" src="LINK_9"></iframe>
+        <iframe id="tab10" src="LINK_10"></iframe>
+        <iframe id="tab11" src="LINK_11"></iframe>
+        <iframe id="tab12" src="LINK_12"></iframe>
+        <iframe id="tab13" src="LINK_13"></iframe>
+        <iframe id="tab14" src="LINK_14"></iframe>
+        <iframe id="tab15" src="LINK_15"></iframe>
+
+    </div>
+
+</div>
+
+<!-- ONLY ICON BUTTON (UPDATED POSITION) -->
+<button id="lockBtn">🔒</button>
+
+<script>
+let isLocked = false;
+
+function setActiveOption(tabId){
+    let select = document.getElementById("tabSelect");
+    for(let i=0;i<select.options.length;i++){
+        select.options[i].classList.remove("option-active");
+    }
+    let activeOption = select.querySelector(`option[value="${tabId}"]`);
+    if(activeOption){
+        activeOption.classList.add("option-active");
+    }
+}
+
+function changeTab(tabId){
+    document.querySelectorAll(".webviews iframe").forEach(f=>f.classList.remove("active"));
+    document.getElementById(tabId).classList.add("active");
+
+    localStorage.setItem("lastTab",tabId);
+    document.getElementById("tabSelect").value = tabId;
+    setActiveOption(tabId);
+}
+
+function updateLockUI(){
+
+    const lockBtn = document.getElementById("lockBtn");
+
+    if(isLocked){
+        document.documentElement.classList.add("locked-mode");
+        lockBtn.textContent = "🔓";
+    }else{
+        document.documentElement.classList.remove("locked-mode");
+        lockBtn.textContent = "🔒";
+    }
+}
+
+document.getElementById("lockBtn").addEventListener("click",()=>{
+    isLocked = !isLocked;
+    localStorage.setItem("isLocked", isLocked ? "true":"false");
+    updateLockUI();
+});
+
+window.onload = function(){
+
+    let savedTab = localStorage.getItem("lastTab") || "tab1";
+
+    document.querySelectorAll(".webviews iframe").forEach(f=>f.classList.remove("active"));
+    document.getElementById(savedTab).classList.add("active");
+    document.getElementById("tabSelect").value = savedTab;
+    setActiveOption(savedTab);
+
+    isLocked = localStorage.getItem("isLocked")==="true";
+    updateLockUI();
+};
+</script>
+
+</body>
+</html>
