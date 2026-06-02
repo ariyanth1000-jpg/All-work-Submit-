@@ -153,25 +153,36 @@ iframe.active{
 const select = document.getElementById("tabSelect");
 const frames = document.querySelectorAll("iframe");
 const body = document.body;
+const lockBtn = document.getElementById("lockBtn");
 
+// Function to show iframe tab
 function show(id){
   frames.forEach(f => f.classList.remove("active"));
-  const frame = document.getElementById(id);
-  frame.classList.add("active");
+  document.getElementById(id).classList.add("active");
   localStorage.setItem("tab", id);
 }
 
+// Dropdown change
 select.onchange = e => show(e.target.value);
 
-// lock button
-document.getElementById("lockBtn").onclick = () => {
+// Lock button
+lockBtn.onclick = () => {
   body.classList.toggle("locked");
+  if(body.classList.contains("locked")){
+    localStorage.setItem("locked", "true");
+  } else {
+    localStorage.setItem("locked", "false");
+  }
 };
 
-// init
-let saved = localStorage.getItem("tab") || "t1";
-select.value = saved;
-show(saved);
+// Initialize saved tab and locked state
+let savedTab = localStorage.getItem("tab") || "t1";
+select.value = savedTab;
+show(savedTab);
+
+if(localStorage.getItem("locked") === "true"){
+  body.classList.add("locked");
+}
 </script>
 
 </body>
