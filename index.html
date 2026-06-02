@@ -3,253 +3,175 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Premium WebView System</title>
-
-<!-- Flicker-free lock state BEFORE render -->
-<script>
-if(localStorage.getItem("isLocked")==="true"){
-    document.documentElement.classList.add("locked-mode");
-}
-</script>
+<title>Fast WebView</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    font-family:Arial,sans-serif;
-    background:#0f172a;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
 }
 
-.container{
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-    transition: all 0.3s ease;
-}
-
-/* TOP BAR */
+/* TOPBAR */
 .topbar{
-    padding:10px;
-    background:rgba(255,255,255,.05);
-    backdrop-filter:blur(10px);
-    border-bottom:1px solid rgba(255,255,255,.08);
-    position:relative;
-    z-index:10;
-    transition:all .3s ease;
+  height:50px;
+  background:#111;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:6px 10px;
 }
 
-/* SELECT */
-#tabSelect{
-    width:100%;
-    height:54px;
-    border:none;
-    border-radius:16px;
-    background:linear-gradient(135deg,#00c853,#00a152);
-    color:#fff;
-    font-weight:800;
-    text-align:center;
-    font-size:clamp(11px,2.4vw,16px);
-    outline:none;
-    cursor:pointer;
-    box-shadow:0 10px 25px rgba(0,200,83,.35);
-    transition:all .25s ease;
+/* DROPDOWN */
+select{
+  width:100%;
+  max-width:400px;
+  height:38px;
+  border:none;
+  outline:none;
+
+  background:#00c853;
+  color:#fff;
+
+  font-size:15px;
+  font-weight:bold;
+
+  text-align:center;
+  text-align-last:center;
+
+  border-radius:20px;
+  padding:0 15px;
+
+  cursor:pointer;
+
+  box-shadow:
+    0 0 8px rgba(0,200,83,.5),
+    0 0 15px rgba(0,200,83,.3);
+  transition: box-shadow .2s ease;
 }
 
-#tabSelect:hover,
-#tabSelect:focus{
-    transform:translateY(-2px) scale(1.01);
-    box-shadow:0 14px 30px rgba(0,200,83,.55);
-}
-
-#tabSelect:active{transform:scale(.98);}
-#tabSelect option{text-align:center;font-weight:700;}
-
-.option-active{
-    background:#00e676 !important;
-    color:#000 !important;
+select:hover{
+  box-shadow:
+    0 0 12px rgba(0,200,83,.7),
+    0 0 20px rgba(0,200,83,.4);
 }
 
 /* WEBVIEW */
 .webviews{
-    flex:1;
-    position:relative;
-    overflow:hidden;
-    background:#000;
-    transition: all 0.3s ease;
+  position:absolute;
+  top:50px;
+  left:0;
+  right:0;
+  bottom:0;
 }
 
-.webviews iframe{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    display:none;
-    border:none;
-    background:#fff;
-    transition: all 0.3s ease;
+iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border:0;
+  display:none;
 }
 
-.webviews iframe.active{
-    display:block;
-    border:5px solid #00c853;
-    box-sizing:border-box;
+iframe.active{
+  display:block;
 }
 
-/* ===== LOCK BUTTON (UPDATED) ===== */
-#lockBtn{
-    position:fixed;
-    bottom:12px;
-    right:12px;   /* এখন ডান পাশে corner */
-    
-    width:38px;
-    height:38px;
-
-    border:none;
-    border-radius:50%;
-
-    background:rgba(0,200,83,.95);
-    color:#fff;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    font-size:18px;
-
-    cursor:pointer;
-
-    box-shadow:0 3px 10px rgba(0,200,83,.35);
-
-    z-index:9999;
-
-    transition:.25s;
+/* LOCK */
+.locked .topbar{
+  display:none;
 }
 
-#lockBtn:hover{
-    transform:scale(1.1);
+.locked .webviews{
+  top:0; /* fullscreen when locked */
 }
 
-/* LOCKED MODE (NO FLICKER) */
-.locked-mode .topbar{
-    height:0 !important;
-    padding:0 !important;
-    overflow:hidden !important;
-    opacity:0 !important;
-    border:none !important;
+/* LOCK BUTTON */
+.lockBtn{
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  width:42px;
+  height:42px;
+  border:none;
+  border-radius:50%;
+  background:rgba(0,200,83,.9);
+  color:#fff;
+  font-size:18px;
+  z-index:9999;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition: transform .12s ease, background .2s ease;
 }
 
-.locked-mode .webviews{
-    height:100vh !important;
+.lockBtn:hover{
+  background:rgba(0,200,83,1);
+}
+
+.lockBtn:active{
+  transform:scale(.92);
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-
-    <div class="topbar" id="topbar">
-        <select id="tabSelect" onchange="changeTab(this.value)">
-            <option value="tab1">ⓕ FB Cookies ID🍪</option>
-            <option value="tab2">ⓕ FB Mail Added ID🛡️</option>
-            <option value="tab3">ⓕ FB Followers ID👥</option>
-            <option value="tab4">ⓕ FB Normal ID🛡️</option>
-            <option value="tab5">ⓕ FB Recovery old ID 🔐</option>
-            <option value="tab6">ⓕ FB Recovery New ID🍪</option>
-            <option value="tab7">🅾 IG Normal ID🛡️</option>
-            <option value="tab8">🅾 IG Cookies ID🍪</option>
-            <option value="tab9">🏆 Top Coin 🔝</option>
-            <option value="tab10">🪙 Follow Token ⛁</option>
-            <option value="tab11">💎 Instra coin ⛃</option>
-            <option value="tab12">📩 Gmail New ID💌</option>
-            <option value="tab13">✆ Whatsapp Rent💬</option>
-            <option value="tab14">📲 OTP Project🔑</option>
-            <option value="tab15">🛠 BM boosting 🚀</option>
-        </select>
-    </div>
-
-    <div class="webviews" id="webviews">
-
-        <iframe id="tab1" src="https://ariyanth1000-jpg.github.io/Fb-Cookies-ID-submit/"></iframe>
-        <iframe id="tab2" src="https://ariyanth1000-jpg.github.io/Submit-ID"></iframe>
-        <iframe id="tab3" src="LINK_3"></iframe>
-        <iframe id="tab4" src="LINK_4"></iframe>
-        <iframe id="tab5" src="LINK_5"></iframe>
-        <iframe id="tab6" src="LINK_6"></iframe>
-        <iframe id="tab7" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab8" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab9" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab10" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab11" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab12" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab13" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab14" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-        <iframe id="tab15" src="https://sites.google.com/view/cooming-soon12/home"></iframe>
-
-    </div>
-
+<div class="topbar">
+  <select id="tabSelect">
+    <option value="t1">ⓕ FB Cookies ID</option>
+    <option value="t2">ⓕ FB Mail Added ID</option>
+    <option value="t3">ⓕ FB Followers ID</option>
+    <option value="t4">ⓕ FB Normal ID</option>
+    <option value="t5">ⓕ FB Recovery old ID</option>
+    <option value="t6">ⓕ FB Recovery New ID</option>
+    <option value="t7">🅾 IG Normal ID</option>
+    <option value="t8">🅾 IG Cookies ID</option>
+  </select>
 </div>
 
-<!-- ONLY ICON BUTTON (UPDATED POSITION) -->
-<button id="lockBtn">🔒</button>
+<div class="webviews">
+  <iframe id="t1" src="https://ariyanth1000-jpg.github.io/Fb-Cookies-ID-submit/"></iframe>
+  <iframe id="t2" src="https://ariyanth1000-jpg.github.io/Submit-ID"></iframe>
+  <iframe id="t3" src="https://example.com"></iframe>
+  <iframe id="t4" src="https://example.com"></iframe>
+  <iframe id="t5" src="https://example.com"></iframe>
+  <iframe id="t6" src="https://example.com"></iframe>
+  <iframe id="t7" src="https://example.com"></iframe>
+  <iframe id="t8" src="https://example.com"></iframe>
+</div>
+
+<button class="lockBtn" id="lockBtn">🔒</button>
 
 <script>
-let isLocked = false;
+const select = document.getElementById("tabSelect");
+const frames = document.querySelectorAll("iframe");
+const body = document.body;
 
-function setActiveOption(tabId){
-    let select = document.getElementById("tabSelect");
-    for(let i=0;i<select.options.length;i++){
-        select.options[i].classList.remove("option-active");
-    }
-    let activeOption = select.querySelector(`option[value="${tabId}"]`);
-    if(activeOption){
-        activeOption.classList.add("option-active");
-    }
+function show(id){
+  frames.forEach(f => f.classList.remove("active"));
+  const frame = document.getElementById(id);
+  frame.classList.add("active");
+  localStorage.setItem("tab", id);
 }
 
-function changeTab(tabId){
-    document.querySelectorAll(".webviews iframe").forEach(f=>f.classList.remove("active"));
-    document.getElementById(tabId).classList.add("active");
+select.onchange = e => show(e.target.value);
 
-    localStorage.setItem("lastTab",tabId);
-    document.getElementById("tabSelect").value = tabId;
-    setActiveOption(tabId);
-}
-
-function updateLockUI(){
-
-    const lockBtn = document.getElementById("lockBtn");
-
-    if(isLocked){
-        document.documentElement.classList.add("locked-mode");
-        lockBtn.textContent = "🔓";
-    }else{
-        document.documentElement.classList.remove("locked-mode");
-        lockBtn.textContent = "🔒";
-    }
-}
-
-document.getElementById("lockBtn").addEventListener("click",()=>{
-    isLocked = !isLocked;
-    localStorage.setItem("isLocked", isLocked ? "true":"false");
-    updateLockUI();
-});
-
-window.onload = function(){
-
-    let savedTab = localStorage.getItem("lastTab") || "tab1";
-
-    document.querySelectorAll(".webviews iframe").forEach(f=>f.classList.remove("active"));
-    document.getElementById(savedTab).classList.add("active");
-    document.getElementById("tabSelect").value = savedTab;
-    setActiveOption(savedTab);
-
-    isLocked = localStorage.getItem("isLocked")==="true";
-    updateLockUI();
+// lock button
+document.getElementById("lockBtn").onclick = () => {
+  body.classList.toggle("locked");
 };
+
+// init
+let saved = localStorage.getItem("tab") || "t1";
+select.value = saved;
+show(saved);
 </script>
 
 </body>
